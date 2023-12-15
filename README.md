@@ -1,5 +1,9 @@
 # Polkadot pallet survey functionnality for QSTN Marketplace
 
-# Visite the app
+### Documentation
+
+### Testing guide
+
+### Access the app
 
 [https://polkadot.qstnus.com/](https://polkadot.qstnus.com/)
