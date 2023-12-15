@@ -11,7 +11,7 @@
 
 ### Business funding - QSTN Marketplace
 
-https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/27d5dd0a-93ff-48fa-a8c5-566786390b67
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/1ef3db8b-c59c-406d-809d-a7de7ea49955
 
 ### User survey and register survey participation - QSTN Marketplace
 
