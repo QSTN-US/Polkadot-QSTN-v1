@@ -17,9 +17,10 @@ https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/27d5dd0a-93ff-48fa-a8
 
 https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/26395d78-412b-45dc-97ea-361979362735
 
-### User survey and reward claim
+### User survey and reward claim after claim proof
 
-- coming soon
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/ea555d5b-6853-4b4d-9853-080308c1e61a
+
 
 ### Creating zero knowledge proof after survey completion
 
