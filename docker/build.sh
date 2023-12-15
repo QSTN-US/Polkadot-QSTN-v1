@@ -8,8 +8,8 @@ cd $(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
 
 # Find the current version from Cargo.toml
 #VERSION=`grep "^version" ./bin/node/cli/Cargo.toml | egrep -o "([0-9\.]+)"`
-GITUSER=QSTN-labs
-GITREPO=milestone1-qstnsubstrate
+GITUSER=QSTN-US
+GITREPO=qstn-substrate-node-v010
 
 # Build the image
 echo "Building ${GITUSER}/${GITREPO}:latest docker image, hang on!"
