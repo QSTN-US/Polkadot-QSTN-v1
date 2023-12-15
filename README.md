@@ -41,13 +41,13 @@ https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/010dec70-bc56-4483-af
 ![overview](https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/1030bbcc-2c2c-4e97-bfc5-eeae30574771)
 
 
-### Documentation
-
-### Testing guide
-
 ### QSTN substrate node
 
 [https://cloudflare-ipfs.com/ipns/dotapps.io/](https://cloudflare-ipfs.com/ipns/dotapps.io/?rpc=wss%3A%2F%2Fdotnode.qstnus.com#/explorer)
+
+### Access Substrate template
+
+[https://pallet-demo.qstnus.com/](https://pallet-demo.qstnus.com/)
 
 ### Access QSTN marketplace
 
