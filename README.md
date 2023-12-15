@@ -13,6 +13,9 @@
 
 https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/27d5dd0a-93ff-48fa-a8c5-566786390b67
 
+### User survey and register survey participation
+
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/26395d78-412b-45dc-97ea-361979362735
 
 ### User survey and reward claim
 
