@@ -23,10 +23,12 @@ https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/ea555d5b-6853-4b4d-98
 
 ### Creating zero knowledge proof after survey completion  - QSTN Marketplace
 
-- coming soon
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/cc2da11c-fb6c-4776-82d7-c5c324e7db9f
 
 
-## Polkadot pallet survey functionnality for QSTN Marketplace
+---
+
+# Polkadot pallet survey functionnality for QSTN Marketplace
 
 ### Substrate react template - QSTN Pallet interaction
 
