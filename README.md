@@ -11,7 +11,8 @@
 
 ### Business funding
 
-- coming soon
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/27d5dd0a-93ff-48fa-a8c5-566786390b67
+
 
 ### User survey and reward claim
 
