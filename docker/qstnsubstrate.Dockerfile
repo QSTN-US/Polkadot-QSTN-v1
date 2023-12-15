@@ -1,8 +1,8 @@
 # This is the build stage for Substrate. Here we create the binary.
 FROM docker.io/paritytech/ci-linux:production as builder
 
-WORKDIR /substrate
-COPY . /substrate
+WORKDIR /
+COPY . /
 RUN cargo build --locked --release
 
 # This is the 2nd stage: a very small image where we copy the Substrate binary."
@@ -15,15 +15,15 @@ LABEL description="Docker image for QSTN Substrate: a platform for web3" \
 	io.parity.image.source="https://github.com/paritytech/polkadot/blob/${VCS_REF}/docker/substrate_builder.Dockerfile" \
 	io.parity.image.documentation="https://github.com/paritytech/polkadot/"
 
-COPY --from=builder /substrate/target/release/substrate /usr/local/bin
-COPY --from=builder /substrate/target/release/subkey /usr/local/bin
-COPY --from=builder /substrate/target/release/node-template /usr/local/bin
-COPY --from=builder /substrate/target/release/chain-spec-builder /usr/local/bin
+COPY --from=builder /target/release/substrate /usr/local/bin
+COPY --from=builder /target/release/subkey /usr/local/bin
+COPY --from=builder /target/release/node-template /usr/local/bin
+COPY --from=builder /target/release/chain-spec-builder /usr/local/bin
 
-RUN useradd -m -u 1000 -U -s /bin/sh -d /substrate substrate && \
-	mkdir -p /data /substrate/.local/share/substrate && \
+RUN useradd -m -u 1000 -U -s /bin/sh -d / substrate && \
+	mkdir -p /data /.local/share/substrate && \
 	chown -R substrate:substrate /data && \
-	ln -s /data /substrate/.local/share/substrate && \
+	ln -s /data /.local/share/substrate && \
 # Sanity checks
 	ldd /usr/local/bin/substrate && \
 # unclutter and minimize the attack surface
