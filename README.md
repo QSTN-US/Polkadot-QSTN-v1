@@ -29,6 +29,9 @@ https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/cc2da11c-fb6c-4776-82
 
 https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/e19d7fb4-1c7b-4402-9192-176afba3003a
 
+### Business NFT creation - QSTN Marketplace
+
+https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/e61016b7-a092-4059-ac73-1dda9d1acabf
 
 
 ---
