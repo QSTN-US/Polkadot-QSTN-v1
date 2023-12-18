@@ -1,6 +1,10 @@
 # Pallet Survey Functionnality for QSTN
 
-Monorepo for QSTN survey pallet implementation containing the [substrate node](https://github.com/QSTN-labs/milestone1-qstnsubstrate/tree/main/substrate-node), the [pallet code](https://github.com/QSTN-labs/milestone1-qstnsubstrate/tree/main/substrate-node/pallets/survey) and the [frontend](https://github.com/QSTN-labs/milestone1-qstnsubstrate/tree/main/front-end).
+Monorepo for QSTN survey pallet implementation containing the [substrate node](https://github.com/QSTN-US/qstn-substrate-node-v010), the [pallet code](https://github.com/QSTN-labs/milestone1-qstnsubstrate/tree/main/substrate-node/pallets/survey) and the [frontend](https://github.com/QSTN-labs/milestone1-qstnsubstrate/tree/main/front-end).
+
+### Substrate node (survey-pallet + nft-pallet)
+
+[substrate node](https://github.com/QSTN-US/qstn-substrate-node-v010)
 
 # Run demo app
 
