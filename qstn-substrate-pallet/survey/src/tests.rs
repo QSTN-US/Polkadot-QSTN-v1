@@ -1,13 +1,8 @@
 use crate::{mock::*, AccountId, Config, Event, Status, Survey};
-use codec::Encode;
 use frame_support::{
     assert_noop, assert_ok,
-    traits::{
-        fungible::{self},
-        OnFinalize, OnInitialize,
-    },
+    traits::fungible::{self}
 };
-use sp_runtime::BoundedVec;
 
 // Utils
 
@@ -57,6 +52,7 @@ fn create_new_survey_success() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -66,7 +62,35 @@ fn create_new_survey_success() {
             events.pop(),
             Some(Event::SurveyCreated {
                 survey_id,
-                owner_id: survey_owner
+                owner_id: survey_owner,
+                creator_id: survey_owner
+            })
+        );
+    });
+}
+
+#[test]
+fn create_new_survey_success_creator_owner() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        assert_ok!(PalletSurvey::create_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::SurveyCreated {
+                survey_id,
+                owner_id: survey_owner,
+                creator_id: survey_creator
             })
         );
     });
@@ -81,6 +105,7 @@ fn create_new_survey_fail_already_existing() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -88,6 +113,7 @@ fn create_new_survey_fail_already_existing() {
             PalletSurvey::create_survey(
                 RuntimeOrigin::signed(survey_owner),
                 survey_id,
+                survey_owner,
                 participants_limit
             ),
             crate::Error::<Test>::SurveyAlreadyCreated
@@ -106,6 +132,7 @@ fn fund_survey_success() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -131,6 +158,76 @@ fn fund_survey_success() {
 }
 
 #[test]
+fn fund_survey_success_creator_owner() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        assert_ok!(PalletSurvey::create_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit
+        ));
+
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::fund_survey(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            fund_amount
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::SurveyFunded {
+                survey_id,
+                funder_id: survey_owner,
+                funded_amount: 1000000
+            })
+        );
+    });
+}
+
+#[test]
+fn fund_survey_success_creator_funds() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        assert_ok!(PalletSurvey::create_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit
+        ));
+
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            fund_amount
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::SurveyFunded {
+                survey_id,
+                funder_id: survey_creator,
+                funded_amount: 1000000
+            })
+        );
+    });
+}
+
+#[test]
 fn fund_survey_gives_expected_reward_amount_10000_for_1000() {
     new_test_ext().execute_with(|| {
         let (survey_owner, _participant) = initialize_state();
@@ -139,6 +236,7 @@ fn fund_survey_gives_expected_reward_amount_10000_for_1000() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -167,6 +265,7 @@ fn fund_survey_fails_funding_inferior_participants_limit() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -209,6 +308,7 @@ fn fund_survey_fails_survey_already_funded() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -228,7 +328,7 @@ fn fund_survey_fails_survey_already_funded() {
 }
 
 #[test]
-fn fund_survey_fails_survey_not_owner() {
+fn fund_survey_fails_survey_not_owner_not_creator() {
     new_test_ext().execute_with(|| {
         let (survey_owner, _participant) = initialize_state();
         let survey_id: SurveyId = 0;
@@ -236,6 +336,7 @@ fn fund_survey_fails_survey_not_owner() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -257,6 +358,7 @@ fn fund_survey_fails_survey_not_enough_balance() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -281,6 +383,7 @@ fn create_and_fund_survey_success() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -299,7 +402,46 @@ fn create_and_fund_survey_success() {
             events.pop(),
             Some(Event::SurveyCreated {
                 survey_id,
-                owner_id: survey_owner
+                owner_id: survey_owner,
+                creator_id: survey_owner
+            })
+        );
+    });
+}
+
+#[test]
+fn create_and_fund_survey_success_creator() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_and_fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit,
+            fund_amount
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::SurveyFunded {
+                survey_id,
+                funder_id: survey_creator,
+                funded_amount: 1000000
+            })
+        );
+        assert_eq!(
+            events.pop(),
+            Some(Event::SurveyCreated {
+                survey_id,
+                owner_id: survey_owner,
+                creator_id: survey_creator
             })
         );
     });
@@ -317,6 +459,7 @@ fn register_participant_success() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -325,6 +468,84 @@ fn register_participant_success() {
 
         assert_ok!(PalletSurvey::register_participant(
             RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::NewParticipantRegistered {
+                survey_id,
+                participant_id
+            })
+        );
+
+        assert!(PalletSurvey::is_participant(survey_id, participant_id));
+    });
+}
+
+#[test]
+fn register_participant_success_creator() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_and_fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit,
+            fund_amount
+        ));
+
+        assert!(!PalletSurvey::is_participant(survey_id, participant_id));
+
+        assert_ok!(PalletSurvey::register_participant(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::NewParticipantRegistered {
+                survey_id,
+                participant_id
+            })
+        );
+
+        assert!(PalletSurvey::is_participant(survey_id, participant_id));
+    });
+}
+
+#[test]
+fn register_participant_success_creator_registers() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_and_fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit,
+            fund_amount
+        ));
+
+        assert!(!PalletSurvey::is_participant(survey_id, participant_id));
+
+        assert_ok!(PalletSurvey::register_participant(
+            RuntimeOrigin::signed(survey_creator),
             survey_id,
             participant_id
         ));
@@ -370,6 +591,7 @@ fn register_participant_fails_survey_not_funded() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit
         ));
 
@@ -395,6 +617,7 @@ fn register_participant_fails_participant_already_registered() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -427,6 +650,7 @@ fn register_participant_fails_not_owner() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -454,6 +678,7 @@ fn register_participant_fails_max_number_participants_reached() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -486,6 +711,7 @@ fn register_participant_fails_survey_is_not_active() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -523,17 +749,19 @@ fn register_participant_fails_survey_is_not_active() {
 }
 
 // set_survey_status
+#[test]
 fn set_survey_status_success() {
     new_test_ext().execute_with(|| {
         let (survey_owner, _participant_id) = initialize_state();
         let survey_id: SurveyId = 0;
         let participants_limit: ParticipantLimitType = 1000000;
-        let fund_amount = 1000000;
+        let _fund_amount = 1000000;
 
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
-            participants_limit,
+            survey_owner,
+            participants_limit
         ));
 
         let survey = get_survey(survey_id);
@@ -559,17 +787,97 @@ fn set_survey_status_success() {
     });
 }
 
+#[test]
+fn set_survey_status_success_creator() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let _fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Active);
+
+        assert_ok!(PalletSurvey::set_survey_status(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            Status::Paused,
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Paused);
+
+        assert_ok!(PalletSurvey::set_survey_status(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            Status::Completed,
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Completed);
+    });
+}
+
+#[test]
+fn set_survey_status_success_creator_sets() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, _participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let _fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Active);
+
+        assert_ok!(PalletSurvey::set_survey_status(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            Status::Paused,
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Paused);
+
+        assert_ok!(PalletSurvey::set_survey_status(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            Status::Completed,
+        ));
+
+        let survey = get_survey(survey_id);
+        assert_eq!(survey.status, Status::Completed);
+    });
+}
+
+#[test]
 fn set_survey_status_fails_not_owner() {
     new_test_ext().execute_with(|| {
         let (survey_owner, participant_id) = initialize_state();
         let survey_id: SurveyId = 0;
         let participants_limit: ParticipantLimitType = 1000000;
-        let fund_amount = 1000000;
+        let _fund_amount = 1000000;
 
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
-            participants_limit,
+            survey_owner,
+            participants_limit
         ));
 
         let survey = get_survey(survey_id);
@@ -577,7 +885,7 @@ fn set_survey_status_fails_not_owner() {
 
         assert_noop!(
             PalletSurvey::set_survey_status(
-                RuntimeOrigin::signed(survey_owner),
+                RuntimeOrigin::signed(participant_id),
                 survey_id,
                 Status::Paused,
             ),
@@ -598,6 +906,7 @@ fn reward_participant_success() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -613,6 +922,116 @@ fn reward_participant_success() {
 
         assert_ok!(PalletSurvey::reward_participant(
             RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        let reward_amount_expected = 1u32.into();
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::RewardClaimed {
+                survey_id,
+                participant_id,
+                reward_amount: reward_amount_expected
+            })
+        );
+
+        // Check that balance of participant has been updated
+        let balance_participant_after =
+            <<Test as Config>::NativeBalance as fungible::Inspect<u64>>::balance(&participant_id);
+
+        assert_eq!(
+            balance_participant_after,
+            balance_participant_before + reward_amount_expected
+        );
+    });
+}
+
+#[test]
+fn reward_participant_success_creator() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_and_fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit,
+            fund_amount
+        ));
+
+        assert_ok!(PalletSurvey::register_participant(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        let balance_participant_before =
+            <<Test as Config>::NativeBalance as fungible::Inspect<u64>>::balance(&participant_id);
+
+        assert_ok!(PalletSurvey::reward_participant(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        let reward_amount_expected = 1u32.into();
+        // Test events
+        let mut events = get_events();
+        assert_eq!(
+            events.pop(),
+            Some(Event::RewardClaimed {
+                survey_id,
+                participant_id,
+                reward_amount: reward_amount_expected
+            })
+        );
+
+        // Check that balance of participant has been updated
+        let balance_participant_after =
+            <<Test as Config>::NativeBalance as fungible::Inspect<u64>>::balance(&participant_id);
+
+        assert_eq!(
+            balance_participant_after,
+            balance_participant_before + reward_amount_expected
+        );
+    });
+}
+
+#[test]
+fn reward_participant_success_creator_rewards() {
+    new_test_ext().execute_with(|| {
+        let (survey_owner, participant_id) = initialize_state();
+        let survey_creator = 3;
+        let survey_id: SurveyId = 0;
+        let participants_limit: ParticipantLimitType = 1000000;
+        let fund_amount = 1000000;
+
+        assert_ok!(PalletSurvey::create_and_fund_survey(
+            RuntimeOrigin::signed(survey_creator),
+            survey_id,
+            survey_owner,
+            participants_limit,
+            fund_amount
+        ));
+
+        assert_ok!(PalletSurvey::register_participant(
+            RuntimeOrigin::signed(survey_owner),
+            survey_id,
+            participant_id
+        ));
+
+        let balance_participant_before =
+            <<Test as Config>::NativeBalance as fungible::Inspect<u64>>::balance(&participant_id);
+
+        assert_ok!(PalletSurvey::reward_participant(
+            RuntimeOrigin::signed(survey_creator),
             survey_id,
             participant_id
         ));
@@ -677,7 +1096,8 @@ fn reward_participant_fails_survey_not_funded() {
         assert_ok!(PalletSurvey::create_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
-            participants_limit,
+            survey_owner,
+            participants_limit
         ));
 
         assert_noop!(
@@ -712,6 +1132,7 @@ fn reward_participant_fails_already_rewarded() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -723,7 +1144,7 @@ fn reward_participant_fails_already_rewarded() {
         ));
 
         assert_ok!(PalletSurvey::reward_participant(
-            RuntimeOrigin::signed(participant_id),
+            RuntimeOrigin::signed(survey_owner),
             survey_id,
             participant_id
         ));
@@ -751,6 +1172,7 @@ fn reward_participant_fails_participant_not_registered() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));
@@ -778,6 +1200,7 @@ fn reward_participant_fails_not_owner() {
         assert_ok!(PalletSurvey::create_and_fund_survey(
             RuntimeOrigin::signed(survey_owner),
             survey_id,
+            survey_owner,
             participants_limit,
             fund_amount
         ));

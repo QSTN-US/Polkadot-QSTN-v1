@@ -1,10 +1,8 @@
 use crate as pallet_survey;
-use codec::{Decode, Encode};
-use frame_support::traits::{ConstBool, ConstU128, ConstU16, ConstU32, ConstU64};
+use frame_support::traits::{ConstU128, ConstU16, ConstU32, ConstU64};
 use sp_core::H256;
-use sp_runtime::testing::UintAuthorityId as AuthorityId;
 use sp_runtime::{
-    traits::{BlakeTwo256, Convert, ConvertBack, IdentityLookup},
+    traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
 
@@ -12,9 +10,9 @@ type Block = frame_system::mocking::MockBlock<Test>;
 type Balance = u128;
 pub type AccountId = u64;
 pub type SurveyId = u128;
-pub type OwnerId = AccountId;
-pub type FunderId = AccountId;
-pub type ParticipantId = AccountId;
+// pub type OwnerId = AccountId;
+// pub type FunderId = AccountId;
+// pub type ParticipantId = AccountId;
 pub type ParticipantLimitType = u128;
 
 // Configure a mock runtime to test the pallet.

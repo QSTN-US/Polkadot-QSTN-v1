@@ -55,6 +55,7 @@ pub mod pallet {
         SurveyCreated {
             survey_id: SurveyId,
             owner_id: OwnerId<T>,
+            creator_id: OwnerId<T>,
         },
 
         // A survey is funded
@@ -131,6 +132,7 @@ pub mod pallet {
     pub struct Survey<T: Config> {
         pub survey_id: SurveyId,
         pub owner_id: OwnerId<T>,
+        pub creator_id: OwnerId<T>,
         pub participants_limit: BalanceOf<T>,
         pub number_participants: BalanceOf<T>,
         pub is_funded: bool,
@@ -201,9 +203,10 @@ pub mod pallet {
         pub fn create_survey(
             origin: OriginFor<T>,
             survey_id: SurveyId,
+            owner_id: OwnerId<T>,
             participants_limit: BalanceOf<T>,
         ) -> DispatchResult {
-            let owner_id = ensure_signed(origin)?;
+            let creator_id = ensure_signed(origin)?;
 
             // Check if survey is not already created
             ensure!(
@@ -214,6 +217,7 @@ pub mod pallet {
             // Create the survey
             let new_survey = Survey {
                 survey_id,
+                creator_id: creator_id.clone(),
                 owner_id: owner_id.clone(),
                 participants_limit,
                 number_participants: 0u32.into(),
@@ -228,6 +232,7 @@ pub mod pallet {
             Self::deposit_event(Event::SurveyCreated {
                 survey_id,
                 owner_id,
+                creator_id
             });
 
             Ok(())
@@ -259,8 +264,8 @@ pub mod pallet {
             match survey_option {
                 None => Err(Error::<T>::SurveyNotCreated.into()),
                 Some(survey) => {
-                    // Check that caller is owner
-                    ensure!(survey.owner_id == caller, Error::<T>::NotOwnerOfSurvey);
+                    // Check that caller is owner or creator
+                    ensure!(survey.owner_id == caller || survey.creator_id == caller, Error::<T>::NotOwnerOfSurvey);
 
                     // Check that survey is not already funded
                     ensure!(!survey.is_funded, Error::<T>::SurveyAlreadyFunded);
@@ -336,10 +341,11 @@ pub mod pallet {
         pub fn create_and_fund_survey(
             origin: OriginFor<T>,
             survey_id: SurveyId,
+            owner_id: OwnerId<T>,
             participants_limit: BalanceOf<T>,
             fund_amount: BalanceOf<T>,
         ) -> DispatchResult {
-            Self::create_survey(origin.clone(), survey_id, participants_limit)?;
+            Self::create_survey(origin.clone(), survey_id, owner_id, participants_limit)?;
             Self::fund_survey(origin, survey_id, fund_amount)?;
             Ok(())
         }
@@ -369,8 +375,8 @@ pub mod pallet {
             match survey_option {
                 None => Err(Error::<T>::SurveyNotCreated.into()),
                 Some(survey) => {
-                    // Check that caller is owner
-                    ensure!(survey.owner_id == caller, Error::<T>::NotOwnerOfSurvey);
+                    // Check that caller is owner or creator
+                    ensure!(survey.owner_id == caller || survey.creator_id == caller, Error::<T>::NotOwnerOfSurvey);
 
                     // Check that survey is already funded
                     ensure!(survey.is_funded, Error::<T>::SurveyNotFunded);
@@ -442,8 +448,8 @@ pub mod pallet {
             match survey_option {
                 None => Err(Error::<T>::SurveyNotCreated.into()),
                 Some(survey) => {
-                    // Check that caller is owner
-                    ensure!(survey.owner_id == caller, Error::<T>::NotOwnerOfSurvey);
+                    // Check that caller is owner or creator
+                    ensure!(survey.owner_id == caller || survey.creator_id == caller, Error::<T>::NotOwnerOfSurvey);
 
                     // Check that survey is already funded
                     ensure!(survey.is_funded, Error::<T>::SurveyNotFunded);
@@ -524,8 +530,8 @@ pub mod pallet {
             match survey_option {
                 None => Err(Error::<T>::SurveyNotCreated.into()),
                 Some(survey) => {
-                    // Check that caller is owner
-                    ensure!(survey.owner_id == caller, Error::<T>::NotOwnerOfSurvey);
+                    // Check that caller is owner or creator
+                    ensure!(survey.owner_id == caller || survey.creator_id == caller, Error::<T>::NotOwnerOfSurvey);
 
                     // Set new status
                     let survey_updated = Survey {

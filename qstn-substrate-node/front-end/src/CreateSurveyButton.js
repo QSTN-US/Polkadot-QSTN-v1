@@ -5,12 +5,12 @@ import { useSubstrateState } from './substrate-lib'
 
 export default function Main(props) {
   const [status, setStatus] = useState(null)
-  const [formState, setFormState] = useState({ addressTo: '', amount: 0 })
+  const [formState, setFormState] = useState({ surveyId: '', ownerId:'', amount: 0 })
 
   const onChange = (_, data) =>
     setFormState(prev => ({ ...prev, [data.state]: data.value }))
 
-  const { surveyId, participantsLimit } = formState
+  const { surveyId, ownerId, participantsLimit } = formState
 
   const { keyring } = useSubstrateState()
   const accounts = keyring.getPairs()
@@ -43,6 +43,17 @@ export default function Main(props) {
             fluid
             label="To"
             type="text"
+            placeholder="Owner Id"
+            value={ownerId}
+            state="ownerId"
+            onChange={onChange}
+          />
+        </Form.Field>
+        <Form.Field>
+          <Input
+            fluid
+            label="To"
+            type="text"
             placeholder="Participants Limit"
             value={participantsLimit}
             state="participantsLimit"
@@ -57,8 +68,8 @@ export default function Main(props) {
             attrs={{
               palletRpc: 'survey',
               callable: 'createSurvey',
-              inputParams: [surveyId, participantsLimit],
-              paramFields: [true,true],
+              inputParams: [surveyId, ownerId, participantsLimit],
+              paramFields: [true,true,true],
             }}
           />
         </Form.Field>
