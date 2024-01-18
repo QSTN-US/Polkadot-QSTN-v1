@@ -5,7 +5,7 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
-
+use crate::weights::WeightInfo;
 type Block = frame_system::mocking::MockBlock<Test>;
 type Balance = u128;
 pub type AccountId = u64;
@@ -70,6 +70,7 @@ impl pallet_balances::Config for Test {
 impl pallet_survey::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type NativeBalance = Balances;
+    type WeightInfo = WeightInfo<Test>;
 }
 
 // Build genesis storage according to the mock runtime.

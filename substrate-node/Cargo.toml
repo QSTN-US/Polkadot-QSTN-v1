@@ -4,5 +4,6 @@ members = [
     "pallets/survey",
     "runtime",
 ]
+workspace.resolver = "2"
 [profile.release]
 panic = "unwind"

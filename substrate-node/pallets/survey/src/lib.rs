@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(unreachable_code)]
+use frame_support::weights::Weight;
 pub use pallet::*;
 
 #[cfg(test)]
@@ -8,8 +9,17 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
+
+mod benchmarking;
+pub mod weights;
+pub trait WeightInfo {
+	fn create_survey() -> Weight;
+	fn fund_survey() -> Weight;
+	fn create_and_fund_survey() -> Weight;
+	fn register_participant() -> Weight;
+	fn reward_participant() -> Weight;
+	fn set_survey_status() -> Weight;
+}
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -18,7 +28,8 @@ pub mod pallet {
         pallet_prelude::*,
         traits::{fungible},
     };
-
+    use crate::WeightInfo;
+    use crate::weights;
     use frame_system::pallet_prelude::*;
     use sp_runtime::{
         traits::{CheckedAdd, CheckedDiv, CheckedSub},
@@ -46,6 +57,8 @@ pub mod pallet {
             + fungible::hold::Mutate<Self::AccountId>
             + fungible::freeze::Inspect<Self::AccountId>
             + fungible::freeze::Mutate<Self::AccountId>;
+
+            type WeightInfo: WeightInfo;
     }
 
     #[pallet::event]
@@ -199,7 +212,7 @@ pub mod pallet {
         ///
         /// Emits `SurveyCreated`
         #[pallet::call_index(0)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::create_survey())]
         pub fn create_survey(
             origin: OriginFor<T>,
             survey_id: SurveyId,
@@ -250,7 +263,7 @@ pub mod pallet {
         ///
         /// Emits `SurveyFunded`
         #[pallet::call_index(1)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::fund_survey())]
         pub fn fund_survey(
             origin: OriginFor<T>,
             survey_id: SurveyId,
@@ -337,7 +350,7 @@ pub mod pallet {
         ///
         /// Emits `SurveyCreated`, `SurveyFunded`
         #[pallet::call_index(2)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::create_and_fund_survey())]
         pub fn create_and_fund_survey(
             origin: OriginFor<T>,
             survey_id: SurveyId,
@@ -361,7 +374,7 @@ pub mod pallet {
         ///
         /// Emits `NewParticipantRegistered`
         #[pallet::call_index(3)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::register_participant())]
         pub fn register_participant(
             origin: OriginFor<T>,
             survey_id: SurveyId,
@@ -434,7 +447,7 @@ pub mod pallet {
         ///
         /// Emits `RewardClaimed`
         #[pallet::call_index(4)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::reward_participant())]
         pub fn reward_participant(
             origin: OriginFor<T>,
             survey_id: SurveyId,
@@ -516,7 +529,7 @@ pub mod pallet {
         ///
         /// Emits `SurveyStatusUpdated`
         #[pallet::call_index(5)]
-        #[pallet::weight(u64::default())]
+        #[pallet::weight(<weights::WeightInfo<T> as WeightInfo>::set_survey_status())]
         pub fn set_survey_status(
             origin: OriginFor<T>,
             survey_id: SurveyId,

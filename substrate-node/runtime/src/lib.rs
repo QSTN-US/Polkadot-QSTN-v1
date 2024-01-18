@@ -276,7 +276,56 @@ pub const UNITS: Balance = 1000000;
 impl pallet_survey::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type NativeBalance = Balances;
+	type WeightInfo = pallet_survey::weights::WeightInfo<Runtime>;
 }
+
+// NFTS PALLET
+mod weights;
+
+use pallet_nfts::PalletFeatures;
+use frame_support::traits::AsEnsureOriginWithArg;
+use frame_system::EnsureSigned;
+
+
+parameter_types! {
+	pub NftsPalletFeatures: PalletFeatures = PalletFeatures::all_enabled();
+	pub const NftsMaxDeadlineDuration: BlockNumber = 12 * 30 * DAYS;
+	pub const NftsCollectionDeposit: Balance = 10 * UNITS; // 10 UNIT deposit to create uniques class
+	pub const NftsItemDeposit: Balance = UNITS / 100; // 1 / 100 UNIT deposit to create uniques instance
+	pub const NftsMetadataDepositBase: Balance = 1;
+	pub const NftsAttributeDepositBase: Balance = 1;
+	pub const NftsDepositPerByte: Balance = 1;
+}
+
+impl pallet_nfts::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CollectionId = u32;
+	type ItemId = u32;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = AssetsForceOrigin;
+	type Locker = ();
+	type CollectionDeposit = NftsCollectionDeposit;
+	type ItemDeposit = NftsItemDeposit;
+	type MetadataDepositBase = NftsMetadataDepositBase;
+	type AttributeDepositBase = NftsAttributeDepositBase;
+	type DepositPerByte = NftsDepositPerByte;
+	type StringLimit = ConstU32<256>;
+	type KeyLimit = ConstU32<64>;
+	type ValueLimit = ConstU32<256>;
+	type ApprovalsLimit = ConstU32<20>;
+	type ItemAttributesApprovalsLimit = ConstU32<30>;
+	type MaxTips = ConstU32<10>;
+	type MaxDeadlineDuration = NftsMaxDeadlineDuration;
+	type MaxAttributesPerCall = ConstU32<10>;
+	type Features = NftsPalletFeatures;
+	type OffchainSignature = Signature;
+	type OffchainPublic = <Signature as Verify>::Signer;
+	type WeightInfo = weights::pallet_nfts::WeightInfo<Runtime>;
+	// #[cfg(feature = "runtime-benchmarks")]
+	// type Helper = ();
+}
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -288,7 +337,8 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-		Survey: pallet_survey
+		Survey: pallet_survey,
+		Nfts: pallet_nfts
 	}
 );
 
@@ -336,6 +386,7 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_sudo, Sudo]
+		[pallet_survey, Survey]
 	);
 }
 
