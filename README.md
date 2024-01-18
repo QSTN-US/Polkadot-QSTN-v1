@@ -9,6 +9,11 @@
 
 ## Video Demos
 
+### Survey Pallet demo
+
+Check the demo video of the whole project here: https://www.youtube.com/watch?v=L5tZQTLslFo
+
+
 ### Business funding - QSTN Marketplace
 
 https://github.com/QSTN-US/Polkadot-QSTN-v1/assets/3760421/1ef3db8b-c59c-406d-809d-a7de7ea49955
